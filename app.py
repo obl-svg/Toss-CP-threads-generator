@@ -2,7 +2,7 @@ import io
 import requests
 from bs4 import BeautifulSoup
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 from PIL import Image
 
 # 1. 페이지 기본 설정
@@ -39,11 +39,11 @@ def extract_meta_from_url(url: str):
     
     soup = BeautifulSoup(response.text, "html.parser")
     
-    # 대표 제목 가져오기 (og:title -> title 태그)
+    # 대표 제목 가져오기
     title_tag = soup.find("meta", property="og:title") or soup.find("title")
     title = title_tag["content"] if title_tag and title_tag.get("content") else (title_tag.string if title_tag else "추천 제품")
     
-    # 대표 이미지 가져오기 (og:image)
+    # 대표 이미지 가져오기
     image_tag = soup.find("meta", property="og:image")
     image_bytes = None
     if image_tag and image_tag.get("content"):
@@ -56,10 +56,10 @@ def extract_meta_from_url(url: str):
 
     return title.strip(), image_bytes
 
-# 5. Gemini 생성 함수
+# 5. 최신 SDK 기준 Gemini 생성 함수
 def generate_thread_post(api_key: str, product_name: str, image_bytes: bytes = None) -> str:
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-2.5-flash')
+    # 최신 Client 객체 생성
+    client = genai.Client(api_key=api_key)
     
     safe_product_name = product_name.replace("\n", " ").strip()
     
@@ -81,7 +81,11 @@ def generate_thread_post(api_key: str, product_name: str, image_bytes: bytes = N
         image.thumbnail((1024, 1024))
         contents.append(image)
 
-    response = model.generate_content(contents)
+    # 최신 모델 gemini-2.5-flash 호출
+    response = client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=contents
+    )
     return response.text
 
 # 6. 메인 입력 폼
