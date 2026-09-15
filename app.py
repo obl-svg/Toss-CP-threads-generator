@@ -117,6 +117,11 @@ if st.button("✨ 스레드 홍보글 생성하기", use_container_width=True):
                         final_post = f"{raw_post}\n\n👉 제품 보러가기: {share_link}\n\n{disclosure}"
 
                     st.success("🎉 스레드 홍보글이 완성되었습니다!")
+                    
+                    # 크롤링한 대표 이미지가 있으면 화면에 보여줌
+                    if image_bytes:
+                        st.image(image_bytes, caption="📸 크롤링된 대표 이미지", use_container_width=True)
+                        
                     st.code(final_post, language=None)
                     
             except requests.exceptions.RequestException:
