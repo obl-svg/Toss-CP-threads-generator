@@ -117,7 +117,9 @@ if st.button("✨ 스레드 홍보글 생성하기", use_container_width=True):
                     
             except requests.exceptions.RequestException:
                 st.error("⚠️ 링크 접속에 실패했습니다. 올바른 URL인지 확인해주세요.")
-            except genai.types.APIError as e:
-                st.error(f"Gemini API 오류: {str(e)}")
             except Exception as e:
-                st.error(f"오류가 발생했습니다: {str(e)}")
+                err_msg = str(e)
+                if "429" in err_msg or "quota" in err_msg.lower():
+                    st.error("⚠️ API 무료 분당 호출 제한(Rate Limit)에 도달했습니다. 1분 후 다시 시도해 주세요.")
+                else:
+                    st.error(f"오류가 발생했습니다: {err_msg}")
