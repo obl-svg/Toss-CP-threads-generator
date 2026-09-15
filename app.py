@@ -81,9 +81,9 @@ def generate_thread_post(api_key: str, product_name: str, image_bytes: bytes = N
         image.thumbnail((1024, 1024))
         contents.append(image)
 
-    # 최신 모델 gemini-2.5-flash 호출
+# 최신 모델 gemini-3.6-flash 호출 (이 부분의 모델명 변경)
     response = client.models.generate_content(
-        model='gemini-2.5-flash',
+        model='gemini-3.6-flash',
         contents=contents
     )
     return response.text
