@@ -1,4 +1,5 @@
 import io
+import re  # <-- 이 줄 추가
 import requests
 from bs4 import BeautifulSoup
 import streamlit as st
@@ -95,15 +96,37 @@ share_link = st.text_input("토스 / 쿠팡 쉐어링크 URL", placeholder="http
 # 7. 생성 실행 및 결과 출력
 st.markdown("---")
 if st.button("✨ 스레드 홍보글 생성하기", use_container_width=True):
+    # 정규표현식으로 http 또는 https 시작 주소만 추출
+    url_match = re.search(r'https?://[^\s]+', share_link)
+    clean_url = url_match.group(0) if url_match else ""
+
     if not api_key:
         st.error("⚠️ Gemini API Key를 입력하거나 Secrets를 확인해주세요.")
-    elif not share_link.strip():
-        st.warning("⚠️ 홍보할 제품 링크를 입력해주세요.")
+    elif not clean_url:
+        st.warning("⚠️ 올바른 제품 링크(http/https 포함)를 입력해주세요.")
     else:
         with st.spinner("링크 분석 및 이미지 추출 중..."):
             try:
-                # 1단계: 크롤링으로 정보 추출
-                extracted_title, image_bytes = extract_meta_from_url(share_link)
+                # 1단계: 정제된 clean_url로 정보 추출
+                extracted_title, image_bytes = extract_meta_from_url(clean_url)
+                st.info(f"📌 감지된 제품 정보: **{extracted_title}**")
+                
+                # 2단계: Gemini AI글 작성
+                with st.spinner("AI가 홍보글을 작성 중입니다..."):
+                    raw_post = generate_thread_post(api_key, extracted_title, image_bytes)
+                    
+                    disclosure = "이 포스팅은 토스쇼핑 쉐어링크 활동의 일환으로, 링크를 통한 구매 시 일정 수수료를 지급받습니다."
+                    if disclosure in raw_post:
+                        final_post = raw_post.replace(disclosure, f"👉 제품 보러가기: {clean_url}\n\n{disclosure}")
+                    else:
+                        final_post = f"{raw_post}\n\n👉 제품 보러가기: {clean_url}\n\n{disclosure}"
+
+                    st.success("🎉 스레드 홍보글이 완성되었습니다!")
+                    
+                    if image_bytes:
+                        st.image(image_bytes, caption="📸 크롤링된 대표 이미지", use_container_width=True)
+                        
+                    st.code(final_post, language=None)
                 st.info(f"📌 감지된 제품 정보: **{extracted_title}**")
                 
                 # 2단계: Gemini AI글 작성
