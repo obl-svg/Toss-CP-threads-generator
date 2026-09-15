@@ -59,7 +59,7 @@ def extract_meta_from_url(url: str):
 # 5. Gemini 생성 함수
 def generate_thread_post(api_key: str, product_name: str, image_bytes: bytes = None) -> str:
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash')
     
     safe_product_name = product_name.replace("\n", " ").strip()
     
